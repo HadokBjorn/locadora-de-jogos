@@ -13,7 +13,7 @@ export async function postGame(req, res) {
 	const { name, image, stockTotal, pricePerDay } = req.body;
 	try {
 		const sameName = (await db.query("SELECT * FROM jogos WHERE name=$1;", [name])).rows.length;
-		if (sameName !== 0) return res.status(409).send("Já existe um jogo com esse nome");
+		if (sameName !== 0) return res.sendStatus(409);
 
 		await db.query(
 			`INSERT INTO jogos (name, image, "stockTotal", "pricePerDay") VALUES ($1,$2,$3,$4);`,
