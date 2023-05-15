@@ -115,7 +115,7 @@ export async function finishRental(req, res) {
 			[today, delayFee, id]
 		);
 		if (setRental.rowCount === 0) return res.sendStatus(400);
-		res.sendStatus(201);
+		res.sendStatus(200);
 	} catch (err) {
 		res.status(500).send(err.message);
 	}

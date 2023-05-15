@@ -16,7 +16,7 @@ const clientSchema = joi.object({
 		.required(),
 	birthday: joi
 		.date()
-		/* .max("01-01-2015") */
+		.max("now")
 		.iso()
 		.messages({ "date.format": `Date format is YYYY-MM-DD` })
 		.required(),

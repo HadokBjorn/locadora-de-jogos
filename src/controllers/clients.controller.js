@@ -14,7 +14,7 @@ export async function createClient(req, res) {
 		]);
 		res.sendStatus(201);
 	} catch (err) {
-		if (err.code === "23505") return res.status(409).send(err.message);
+		if (err.code === "23505") return res.sendStatus(409);
 		res.status(500).send(err);
 	}
 }
