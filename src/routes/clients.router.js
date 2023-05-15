@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
 	createClient,
-	getClient,
+	getOneClient,
 	getClients,
 	updateClient,
 } from "../controllers/clients.controller.js";
@@ -12,7 +12,7 @@ const clientsRouter = Router();
 
 clientsRouter.post("/customers", validateSchema(clientSchema), createClient);
 clientsRouter.get("/customers", getClients);
-clientsRouter.get("/customers/:id", getClient);
+clientsRouter.get("/customers/:id", getOneClient);
 clientsRouter.put("/customers/:id", validateSchema(clientSchema), updateClient);
 
 export default clientsRouter;
