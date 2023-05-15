@@ -40,7 +40,15 @@ export async function getClients(req, res) {
 export async function getOneClient(req, res) {
 	const { id } = req.params;
 	try {
-		const client = await db.query(`SELECT * FROM customers WHERE id=$1`, [id]);
+		const client = await db.query(
+			`SELECT 
+			id,
+			name,
+			phone,
+			cpf,
+			TO_CHAR(birthday, 'YYYY-MM-DD') AS birthday FROM customers WHERE id=$1`,
+			[id]
+		);
 		if (client.rowCount === 0) return res.sendStatus(404);
 		res.status(200).send(client.rows[0]);
 	} catch (err) {
