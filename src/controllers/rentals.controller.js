@@ -56,9 +56,9 @@ export async function getRentals(req, res) {
                 rentals.id,
                 rentals."customerId",
                 rentals."gameId",
-                TO_CHAR(rentals."rentDate", 'YYYY-MM-DD'),
+                TO_CHAR(rentals."rentDate", 'YYYY-MM-DD') AS "rentDate",
                 rentals."daysRented",
-                rentals."returnDate",
+                TO_CHAR(rentals."returnDate", 'YYYY-MM-DD') AS "returnDate",
                 rentals."originalPrice",
                 rentals."delayFee",
                 customers.id AS client_id,
@@ -78,6 +78,44 @@ export async function getRentals(req, res) {
 			return { ...el, customer, game };
 		});
 		res.status(200).send(rentals);
+	} catch (err) {
+		res.status(500).send(err.message);
+	}
+}
+export async function finishRental(req, res) {
+	const { id } = req.params;
+
+	try {
+		const rental = await db.query(
+			`SELECT 
+            id,
+            "customerId",
+            "gameId",
+            TO_CHAR("rentDate", 'YYYY-MM-DD') AS "rentDate",
+            "daysRented",
+            TO_CHAR("returnDate", 'YYYY-MM-DD') AS "returnDate",
+            "originalPrice",
+            "delayFee"
+            FROM rentals 
+            WHERE id=$1`,
+			[id]
+		);
+		if (rental.rowCount === 0) return res.sendStatus(404);
+		const today = dayjs().format("YYYY-MM-DD");
+		const delayDays = (new Date(today) - new Date(rental.rows[0].rentDate)) / (1000 * 60 * 60 * 24);
+		const delayFee = delayDays * rental.rows[0].originalPrice;
+
+		const setRental = await db.query(
+			`UPDATE rentals SET
+            "returnDate"=$1,
+            "delayFee"=$2
+            WHERE id=$3
+            AND "returnDate" IS NULL;
+            `,
+			[today, delayFee, id]
+		);
+		if (setRental.rowCount === 0) return res.sendStatus(400);
+		res.sendStatus(201);
 	} catch (err) {
 		res.status(500).send(err.message);
 	}
