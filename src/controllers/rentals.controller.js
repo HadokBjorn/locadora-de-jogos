@@ -6,10 +6,21 @@ export async function createRental(req, res) {
 
 	try {
 		const gamePrice = await db.query(
-			`SELECT games."pricePerDay" FROM games JOIN customers ON customers.id = $1 WHERE games.id = $2`,
+			`SELECT games."pricePerDay", games."stockTotal",
+            (
+                SELECT  id
+                FROM    rentals
+                WHERE   "gameId" = $2 
+                ORDER BY id DESC LIMIT 1
+            ) AS rentals
+            FROM games JOIN customers ON customers.id = $1
+            WHERE games.id = $2`,
 			[customerId, gameId]
 		);
-		if (gamePrice.rowCount === 0) return res.sendStatus(400);
+
+		if (gamePrice.rowCount === 0 || gamePrice.rows[0].rentals >= gamePrice.rows[0].stockTotal) {
+			return res.sendStatus(400);
+		}
 		await db.query(
 			`INSERT INTO rentals (
             "customerId",
