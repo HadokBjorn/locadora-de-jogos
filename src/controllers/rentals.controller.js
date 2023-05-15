@@ -48,11 +48,37 @@ export async function createRental(req, res) {
 	}
 }
 
-/* export async function getRentals(req, res) {
+export async function getRentals(req, res) {
 	try {
-		const rentals = (await db.query(`SELECT * FROM rentals`)).rows;
+		const rentals = (
+			await db.query(`
+                SELECT
+                rentals.id,
+                rentals."customerId",
+                rentals."gameId",
+                TO_CHAR(rentals."rentDate", 'YYYY-MM-DD'),
+                rentals."daysRented",
+                rentals."returnDate",
+                rentals."originalPrice",
+                rentals."delayFee",
+                customers.id AS client_id,
+                customers.name AS client_name,
+                games.id AS game_id,
+                games.name AS game_name
+                FROM rentals 
+                JOIN customers ON customers.id=rentals."customerId"
+                JOIN games ON games.id = rentals."gameId";`)
+		).rows.map((el) => {
+			const customer = { id: el.client_id, name: el.client_name };
+			const game = { id: el.game_id, name: el.game_name };
+			delete el.client_id;
+			delete el.client_name;
+			delete el.game_id;
+			delete el.game_name;
+			return { ...el, customer, game };
+		});
 		res.status(200).send(rentals);
 	} catch (err) {
 		res.status(500).send(err.message);
 	}
-} */
+}
