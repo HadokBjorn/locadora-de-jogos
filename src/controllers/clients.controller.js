@@ -53,11 +53,14 @@ export async function updateClient(req, res) {
 	const { name, phone, cpf, birthday } = req.body;
 
 	try {
-		const teste = await db.query(
-			`UPDATE customers SET name=$2, phone=$3, birthday=$5 WHERE id=$1 AND cpf=$4;`,
-			[id, name, phone, cpf, birthday]
+		const client = await db.query(`SELECT id, cpf FROM customers WHERE ID=$1`, [id]);
+		if (client.rowCount === 0) return res.sendStatus(404);
+		if (client.rows[0].cpf !== cpf) return res.sendStatus(400);
+
+		const setClient = await db.query(
+			`UPDATE customers SET name=$2, phone=$3, birthday=$4 WHERE id=$1 AND cpf=$5;`,
+			[id, name, phone, birthday, cpf]
 		);
-		if (teste.rowCount === 0) return res.sendStatus(409);
 		res.sendStatus(200);
 	} catch (err) {
 		res.status(500).send(err.message);

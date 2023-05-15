@@ -102,8 +102,10 @@ export async function finishRental(req, res) {
 		);
 		if (rental.rowCount === 0) return res.sendStatus(404);
 		const today = dayjs().format("YYYY-MM-DD");
-		const delayDays = (new Date(today) - new Date(rental.rows[0].rentDate)) / (1000 * 60 * 60 * 24);
+		const delayDays = dayjs(today).diff(rental.rows[0].rentDate, "d");
 		const delayFee = delayDays * rental.rows[0].originalPrice;
+		console.log(delayDays);
+		console.log(delayFee);
 
 		const setRental = await db.query(
 			`UPDATE rentals SET
