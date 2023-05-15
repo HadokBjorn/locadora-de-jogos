@@ -88,22 +88,19 @@ export async function finishRental(req, res) {
 	try {
 		const rental = await db.query(
 			`SELECT 
-            id,
-            "customerId",
-            "gameId",
-            TO_CHAR("rentDate", 'YYYY-MM-DD') AS "rentDate",
-            "daysRented",
-            TO_CHAR("returnDate", 'YYYY-MM-DD') AS "returnDate",
-            "originalPrice",
-            "delayFee"
+            rentals.id,
+            rentals."gameId",
+            TO_CHAR(rentals."rentDate", 'YYYY-MM-DD') AS "rentDate",
+			games."pricePerDay"
             FROM rentals 
-            WHERE id=$1`,
+			JOIN games ON games.id=rentals."gameId"
+            WHERE rentals.id=$1`,
 			[id]
 		);
 		if (rental.rowCount === 0) return res.sendStatus(404);
 		const today = dayjs().format("YYYY-MM-DD");
 		const delayDays = dayjs(today).diff(rental.rows[0].rentDate, "d");
-		const delayFee = delayDays * rental.rows[0].originalPrice;
+		const delayFee = delayDays * rental.rows[0].pricePerDay;
 		console.log(delayDays);
 		console.log(delayFee);
 
