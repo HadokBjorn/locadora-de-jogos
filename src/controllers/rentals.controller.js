@@ -90,6 +90,7 @@ export async function finishRental(req, res) {
 			`SELECT 
             rentals.id,
             rentals."gameId",
+			rentals."daysRented",
             TO_CHAR(rentals."rentDate", 'YYYY-MM-DD') AS "rentDate",
 			games."pricePerDay"
             FROM rentals 
@@ -99,8 +100,13 @@ export async function finishRental(req, res) {
 		);
 		if (rental.rowCount === 0) return res.sendStatus(404);
 		const today = dayjs().format("YYYY-MM-DD");
-		const delayDays = dayjs(today).diff(rental.rows[0].rentDate, "d");
-		const delayFee = delayDays * rental.rows[0].pricePerDay;
+		const { rentDate, pricePerDay, daysRented } = rental.rows[0];
+		const delayDays = dayjs(today).diff(rentDate, "d") - daysRented;
+		let delayFee = null;
+		if (delayDays > 0) {
+			delayFee = pricePerDay * delayDays;
+		}
+		console.log(delayFee);
 
 		const setRental = await db.query(
 			`UPDATE rentals SET
